@@ -1,14 +1,17 @@
 import { useParams } from "react-router-dom";
-import articles from "../data/article-content";
 import CommentsList from "../Components/CommentsList";
 import NotFoundPage from "./NotFoundPage";
 import { useState, useEffect } from "react";
 import axios from "axios";
+import AddCommentForm from "../Components/AddCommentForm";
+import useUser from "../hooks/useUser";
+import articles from "../data/article-content";
 
 const ArticlePage = () => {
   const [articleInfo, setArticleInfo] = useState({ upvotes: 0, comments: [] });
   const { articleId } = useParams();
   const article = articles.find((article) => article.name == articleId);
+  const { user, isLoading } = useUser();
 
   useEffect(() => {
     const loadArticleInfo = async () => {
@@ -33,12 +36,24 @@ const ArticlePage = () => {
     <>
       <h1>{article.title}</h1>
       <div className="upvotes-section">
-        <button onClick={addUpvote}>Upvote</button>{" "}
+        {user ? (
+          <button onClick={addUpvote}>Upvote</button>
+        ) : (
+          <button>Login to upvote</button>
+        )}{" "}
         <p> This article has {articleInfo.upvotes} upvotes.</p>
       </div>
       {article.content.map((pargraph, i) => (
         <p key={i}>{pargraph}</p>
       ))}
+      {user ? (
+        <AddCommentForm
+          onArticleUpdated={setArticleInfo}
+          articleName={articleId}
+        />
+      ) : (
+        <button>Login to comment</button>
+      )}
       <CommentsList comments={articleInfo.comments} />
     </>
   );
